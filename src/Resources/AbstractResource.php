@@ -7,7 +7,7 @@ namespace Atlas\Connectors\Nexus\Resources;
 use Atlas\Connectors\Nexus\Exceptions\ApiException;
 use Atlas\Connectors\Nexus\Exceptions\AuthenticationException;
 use Atlas\Connectors\Nexus\NexusClient;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -41,8 +41,8 @@ abstract class AbstractResource
             $response = $this->client->httpClient->request($method, $uri, $options);
 
             return $this->parseResponse($response);
-        } catch (ClientException $e) {
-            $this->handleClientException($e);
+        } catch (BadResponseException $e) {
+            $this->handleBadResponseException($e);
         } catch (GuzzleException | \JsonException $e) {
             throw new ApiException($e->getMessage(), (int) $e->getCode());
         }
@@ -72,14 +72,14 @@ abstract class AbstractResource
     }
 
     /**
-     * Handle client exceptions and map them to specialized exceptions.
+     * Handle bad response exceptions and map them to specialized exceptions.
      *
-     * @param ClientException $e
+     * @param BadResponseException $e
      * @return never
      * @throws ApiException
      * @throws AuthenticationException
      */
-    protected function handleClientException(ClientException $e): never
+    protected function handleBadResponseException(BadResponseException $e): never
     {
         /** @var ResponseInterface $response */
         $response = $e->getResponse();
