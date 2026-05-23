@@ -28,6 +28,9 @@ class NexusClient
         $this->baseUrl = rtrim($baseUrl, '/') . '/service/rest/';
         $this->httpClientInstance = new Client(array_merge([
             'base_uri' => $this->baseUrl,
+            'timeout' => 10,
+            'connect_timeout' => 2,
+            'verify' => true,
             'headers' => [
                 'Accept' => 'application/json',
             ],

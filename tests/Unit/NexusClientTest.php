@@ -61,4 +61,25 @@ class NexusClientTest extends TestCase
         $client = new NexusClient('https://nexus.example.com');
         $this->assertInstanceOf(SearchResource::class, $client->search());
     }
+
+    public function testClientHasDefaultSecurityAndPerformanceSettings(): void
+    {
+        $client = new NexusClient('https://nexus.example.com');
+
+        $this->assertEquals(10, $client->httpClient->getConfig('timeout'));
+        $this->assertEquals(2, $client->httpClient->getConfig('connect_timeout'));
+        $this->assertTrue($client->httpClient->getConfig('verify'));
+    }
+
+    public function testClientAllowsOverridingDefaults(): void
+    {
+        $client = new NexusClient('https://nexus.example.com', [
+            'timeout' => 30,
+            'verify' => false,
+        ]);
+
+        $this->assertEquals(30, $client->httpClient->getConfig('timeout'));
+        $this->assertEquals(2, $client->httpClient->getConfig('connect_timeout'));
+        $this->assertFalse($client->httpClient->getConfig('verify'));
+    }
 }
