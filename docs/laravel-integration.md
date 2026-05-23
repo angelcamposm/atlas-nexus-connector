@@ -1,10 +1,10 @@
-# Laravel Integration Tutorial
+# Laravel Integration Guide
 
-This tutorial will guide you through integrating the `atlas-connectors-nexus` package into a Laravel project.
+This guide will show you how to integrate the Atlas Nexus Connector into your Laravel application using modern best practices.
 
 ## 1. Installation
 
-First, install the package via Composer:
+Install the package via Composer:
 
 ```bash
 composer require acamposm/atlas-nexus-connector
@@ -12,27 +12,27 @@ composer require acamposm/atlas-nexus-connector
 
 ## 2. Configuration
 
-Add the Nexus configuration to your `config/services.php` file:
+First, add the connection details to your `.env` file:
+
+```env
+NEXUS_BASE_URL=https://your-nexus-instance.com
+NEXUS_USERNAME=admin
+NEXUS_PASSWORD=admin123
+```
+
+Next, add a new entry to your `config/services.php` file to keep your configuration organized:
 
 ```php
 'nexus' => [
-    'base_url' => env('NEXUS_BASE_URL', 'https://nexus.example.com'),
+    'base_url' => env('NEXUS_BASE_URL'),
     'username' => env('NEXUS_USERNAME'),
     'password' => env('NEXUS_PASSWORD'),
 ],
 ```
 
-Then, add these variables to your `.env` file:
-
-```env
-NEXUS_BASE_URL=https://your-nexus-instance.com
-NEXUS_USERNAME=your-username
-NEXUS_PASSWORD=your-password
-```
-
 ## 3. Service Provider Binding
 
-To use the `NexusClient` via dependency injection, bind it in your `app/Providers/AppServiceProvider.php`:
+Register the `NexusClient` as a singleton in `app/Providers/AppServiceProvider.php`. This allows you to use dependency injection throughout your application.
 
 ```php
 namespace App\Providers;
@@ -53,7 +53,10 @@ class AppServiceProvider extends ServiceProvider
             return new NexusClient(
                 baseUrl: $config['base_url'],
                 options: [
-                    'auth' => [$config['username'], $config['password']],
+                    'auth' => [
+                        $config['username'],
+                        $config['password'],
+                    ],
                 ]
             );
         });
@@ -61,9 +64,9 @@ class AppServiceProvider extends ServiceProvider
 }
 ```
 
-## 4. Usage in Controllers
+## 4. Usage
 
-Now you can inject the `NexusClient` into your controllers:
+Once the client is registered, you can inject it into your Controllers, Jobs, or Services.
 
 ```php
 namespace App\Http\Controllers;
@@ -71,68 +74,46 @@ namespace App\Http\Controllers;
 use Atlas\Connectors\Nexus\NexusClient;
 use Illuminate\Http\JsonResponse;
 
-class NexusController extends Controller
+class RepositoryController extends Controller
 {
     public function __construct(
-        protected NexusClient $nexus
+        private NexusClient $nexus
     ) {}
 
     /**
-     * List all repositories.
+     * List all repositories from Nexus.
      */
     public function index(): JsonResponse
     {
-        try {
-            $repositories = $this->nexus->repositories()->list();
-            
-            return response()->json($repositories);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
+        $repositories = $this->nexus->repositories()->list();
 
-    /**
-     * Get details for a specific asset.
-     */
-    public function showAsset(string $id): JsonResponse
-    {
-        try {
-            $asset = $this->nexus->assets()->get($id);
-            
-            return response()->json($asset);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
-        }
+        return response()->json($repositories);
     }
 }
 ```
 
-## 5. Handling Exceptions
+## 5. Testing & Mocking
 
-The package provides specific exceptions that you can catch for more granular error handling:
-
-```php
-use Atlas\Connectors\Nexus\Exceptions\AuthenticationException;
-use Atlas\Connectors\Nexus\Exceptions\ApiException;
-
-try {
-    $this->nexus->system()->status();
-} catch (AuthenticationException $e) {
-    // Handle invalid credentials
-} catch (ApiException $e) {
-    // Handle API errors (e.g., 404, 500)
-}
-```
-
-## 6. Real-time Status Check
-
-You can also use it in a health check or dashboard:
+When writing tests for your application, you should avoid making real API calls to your Nexus instance. You can easily mock the `NexusClient` using Laravel's built-in mocking capabilities.
 
 ```php
-public function health()
+use Atlas\Connectors\Nexus\NexusClient;
+use Mockery\MockInterface;
+
+public function test_it_can_list_repositories()
 {
-    return response()->json([
-        'nexus' => $this->nexus->system()->status() === 'OK',
-    ]);
+    $this->mock(NexusClient::class, function (MockInterface $mock) {
+        $mock->shouldReceive('repositories->list')
+            ->once()
+            ->andReturn([
+                ['name' => 'maven-releases', 'type' => 'hosted'],
+                ['name' => 'maven-central', 'type' => 'proxy'],
+            ]);
+    });
+
+    $response = $this->get('/repositories');
+
+    $response->assertStatus(200)
+        ->assertJsonCount(2);
 }
 ```
