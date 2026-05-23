@@ -31,7 +31,7 @@ $status = $client->system()->status();
 - [Laravel Integration](docs/laravel-integration.md)
 - [Usage Guide](docs/usage.md)
 - [Authentication & Configuration](docs/authentication.md)
-- *Error Handling (Coming Soon)*
+- [Error Handling](docs/exceptions.md)
 
 ## Features
 
