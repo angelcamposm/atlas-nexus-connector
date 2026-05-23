@@ -28,10 +28,10 @@ $status = $client->system()->status();
 
 ## Documentation
 
-- [Usage Guide](docs/usage.md)
-- [Authentication](docs/authentication.md)
 - [Laravel Integration](docs/laravel-integration.md)
-- [Error Handling](docs/exceptions.md)
+- *Usage Guide (Coming Soon)*
+- *Authentication (Coming Soon)*
+- *Error Handling (Coming Soon)*
 
 ## Features
 
