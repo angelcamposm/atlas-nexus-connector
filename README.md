@@ -30,7 +30,7 @@ $status = $client->system()->status();
 
 - [Laravel Integration](docs/laravel-integration.md)
 - [Usage Guide](docs/usage.md)
-- *Authentication (Coming Soon)*
+- [Authentication & Configuration](docs/authentication.md)
 - *Error Handling (Coming Soon)*
 
 ## Features
