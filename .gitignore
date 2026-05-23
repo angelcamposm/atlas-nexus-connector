@@ -1,6 +1,6 @@
-.idea/
-.phpunit.cache/
-.scannerwork/
-build/
-vendor/
-.env
+/.idea/
+/.phpunit.cache/
+/.scannerwork/
+/build/
+/vendor/
+.env.superpowers/

@@ -4,19 +4,6 @@
          bootstrap="vendor/autoload.php"
          colors="true"
          cacheDirectory=".phpunit.cache">
-    <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
-        <testsuite name="Feature">
-            <directory>tests/Feature</directory>
-        </testsuite>
-    </testsuites>
-    <source>
-        <include>
-            <directory>src</directory>
-        </include>
-    </source>
     <coverage includeUncoveredFiles="true">
         <report>
             <clover outputFile="build/coverage/clover.xml"/>
@@ -31,4 +18,17 @@
         <ini name="display_errors" value="1" />
         <ini name="error_reporting" value="-1" />
     </php>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>

@@ -16,9 +16,9 @@ composer require acamposm/atlas-nexus-connector
 ## Usage
 
 ```php
-use Atlas\Connectors\Nexus\nexusClient;
+use Atlas\Connectors\Nexus\NexusClient;
 
-$client = new nexusClient('https://nexus.example.com');
+$client = new NexusClient('https://nexus.example.com');
 
 // Check system status
 $status = $client->system()->status();

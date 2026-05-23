@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atlas\Connectors\Nexus\Tests\Unit\Resources;
 
-use Atlas\Connectors\Nexus\nexusClient;
+use Atlas\Connectors\Nexus\NexusClient;
 use Atlas\Connectors\Nexus\Resources\RepositoryResource;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -14,18 +14,18 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(RepositoryResource::class)]
-#[UsesClass(nexusClient::class)]
+#[UsesClass(NexusClient::class)]
 #[UsesClass(\Atlas\Connectors\Nexus\Resources\AbstractResource::class)]
 class RepositoryResourceTest extends TestCase
 {
     private MockHandler $mockHandler;
-    private nexusClient $client;
+    private NexusClient $client;
 
     protected function setUp(): void
     {
         $this->mockHandler = new MockHandler();
         $handlerStack = HandlerStack::create($this->mockHandler);
-        $this->client = new nexusClient('https://nexus.example.com', [
+        $this->client = new NexusClient('https://nexus.example.com', [
             'handler' => $handlerStack,
         ]);
     }
