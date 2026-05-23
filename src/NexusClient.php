@@ -22,19 +22,27 @@ class NexusClient
      * @param array<string, mixed> $options Guzzle client options.
      */
     public function __construct(
-        private string $baseUrl,
-        private readonly array $options = []
+        string $baseUrl,
+        array $options = []
     ) {
-        $this->baseUrl = rtrim($baseUrl, '/') . '/service/rest/';
-        $this->httpClientInstance = new Client(array_merge([
-            'base_uri' => $this->baseUrl,
+        $normalizedUrl = rtrim($baseUrl, '/');
+        if (!str_ends_with($normalizedUrl, '/service/rest')) {
+            $normalizedUrl .= '/service/rest';
+        }
+        $normalizedUrl .= '/';
+
+        $headers = array_merge([
+            'Accept' => 'application/json',
+        ], $options['headers'] ?? []);
+
+        $config = array_merge([
+            'base_uri' => $normalizedUrl,
             'timeout' => 10,
             'connect_timeout' => 2,
             'verify' => true,
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
-        ], $this->options));
+        ], $options, ['headers' => $headers]);
+
+        $this->httpClientInstance = new Client($config);
     }
 
     /**

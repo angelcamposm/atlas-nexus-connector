@@ -30,6 +30,39 @@ class NexusClientTest extends TestCase
     {
         $client = new NexusClient('https://nexus.example.com/');
         $this->assertEquals('https://nexus.example.com/service/rest/', (string) $client->httpClient->getConfig('base_uri'));
+
+        $client2 = new NexusClient('https://nexus.example.com/service/rest');
+        $this->assertEquals('https://nexus.example.com/service/rest/', (string) $client2->httpClient->getConfig('base_uri'));
+
+        $client3 = new NexusClient('https://nexus.example.com/service/rest/');
+        $this->assertEquals('https://nexus.example.com/service/rest/', (string) $client3->httpClient->getConfig('base_uri'));
+    }
+
+    public function testClientMergesHeadersCorrectly(): void
+    {
+        $client = new NexusClient('https://nexus.example.com', [
+            'headers' => [
+                'X-Custom' => 'value',
+            ],
+        ]);
+
+        $headers = $client->httpClient->getConfig('headers');
+        $this->assertArrayHasKey('Accept', $headers);
+        $this->assertEquals('application/json', $headers['Accept']);
+        $this->assertArrayHasKey('X-Custom', $headers);
+        $this->assertEquals('value', $headers['X-Custom']);
+    }
+
+    public function testClientAllowsOverridingAcceptHeader(): void
+    {
+        $client = new NexusClient('https://nexus.example.com', [
+            'headers' => [
+                'Accept' => 'application/xml',
+            ],
+        ]);
+
+        $headers = $client->httpClient->getConfig('headers');
+        $this->assertEquals('application/xml', $headers['Accept']);
     }
 
     public function testSystemResourceAccess(): void

@@ -19,3 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive PHPDoc documentation for all methods.
 - 100% test coverage with PHPUnit.
 - Static analysis configuration with PHPStan.
+
+### Security
+- Hardened default HTTP client settings (timeout, connect_timeout, verify).
+- Improved URL normalization to prevent duplicate path segments.
+- Enhanced header merging to ensure mandatory headers are preserved.
+
