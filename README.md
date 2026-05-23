@@ -29,7 +29,7 @@ $status = $client->system()->status();
 ## Documentation
 
 - [Laravel Integration](docs/laravel-integration.md)
-- *Usage Guide (Coming Soon)*
+- [Usage Guide](docs/usage.md)
 - *Authentication (Coming Soon)*
 - *Error Handling (Coming Soon)*
 
