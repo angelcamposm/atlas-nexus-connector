@@ -136,4 +136,34 @@ class AbstractResourceTest extends TestCase
 
         $this->assertEquals(['foo' => 'bar'], $result);
     }
+
+    public function testHandlesInvalidJsonResponse(): void
+    {
+        $resource = new class($this->client) extends AbstractResource {
+            public function callRequest(string $method, string $uri): mixed
+            {
+                return $this->request($method, $uri);
+            }
+        };
+
+        $this->mockHandler->append(new Response(200, ['Content-Type' => 'application/json'], 'invalid json'));
+
+        $this->expectException(ApiException::class);
+        $resource->callRequest('GET', '/test');
+    }
+
+    public function testHandlesEmptyResponse(): void
+    {
+        $resource = new class($this->client) extends AbstractResource {
+            public function callRequest(string $method, string $uri): mixed
+            {
+                return $this->request($method, $uri);
+            }
+        };
+
+        $this->mockHandler->append(new Response(200, ['Content-Type' => 'application/json'], ''));
+
+        $result = $resource->callRequest('GET', '/test');
+        $this->assertEquals('', $result);
+    }
 }

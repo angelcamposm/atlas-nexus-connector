@@ -11,13 +11,23 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * Base class for all Nexus API resources.
+ */
 abstract class AbstractResource
 {
+    /**
+     * Create a new resource instance.
+     *
+     * @param NexusClient $client
+     */
     public function __construct(protected NexusClient $client)
     {
     }
 
     /**
+     * Send an API request.
+     *
      * @param string $method
      * @param string $uri
      * @param array<string, mixed> $options
@@ -33,23 +43,37 @@ abstract class AbstractResource
             return $this->parseResponse($response);
         } catch (ClientException $e) {
             $this->handleClientException($e);
-        } catch (GuzzleException $e) {
+        } catch (GuzzleException | \JsonException $e) {
             throw new ApiException($e->getMessage(), (int) $e->getCode());
         }
     }
 
+    /**
+     * Parse the API response.
+     *
+     * @param ResponseInterface $response
+     * @return mixed
+     * @throws \JsonException
+     */
     protected function parseResponse(ResponseInterface $response): mixed
     {
         $contentType = $response->getHeaderLine('Content-Type');
+        $contents = $response->getBody()->getContents();
 
-        if (str_contains($contentType, 'application/json')) {
-            return json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        if ($contents === '') {
+            return '';
         }
 
-        return $response->getBody()->getContents();
+        if (str_contains($contentType, 'application/json')) {
+            return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        return $contents;
     }
 
     /**
+     * Handle client exceptions and map them to specialized exceptions.
+     *
      * @param ClientException $e
      * @return never
      * @throws ApiException
