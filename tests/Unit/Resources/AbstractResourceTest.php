@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atlas\Connectors\Nexus\Tests\Unit\Resources;
 
 use Atlas\Connectors\Nexus\Exceptions\ApiException;
-use Atlas\Connectors\Nexus\nexusClient;
+use Atlas\Connectors\Nexus\NexusClient;
 use Atlas\Connectors\Nexus\Resources\AbstractResource;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
@@ -17,18 +17,18 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(AbstractResource::class)]
-#[UsesClass(nexusClient::class)]
+#[UsesClass(NexusClient::class)]
 #[UsesClass(ApiException::class)]
 class AbstractResourceTest extends TestCase
 {
     private MockHandler $mockHandler;
-    private nexusClient $client;
+    private NexusClient $client;
 
     protected function setUp(): void
     {
         $this->mockHandler = new MockHandler();
         $handlerStack = HandlerStack::create($this->mockHandler);
-        $this->client = new nexusClient('https://nexus.example.com', [
+        $this->client = new NexusClient('https://nexus.example.com', [
             'handler' => $handlerStack,
         ]);
     }
@@ -98,6 +98,27 @@ class AbstractResourceTest extends TestCase
         $this->expectExceptionCode(403);
 
         $resource->callRequest('GET', '/test');
+    }
+
+    public function testHandlesClientExceptionsWithSanitizedMessage(): void
+    {
+        $resource = new class($this->client) extends AbstractResource {
+            public function callRequest(string $method, string $uri): mixed
+            {
+                return $this->request($method, $uri);
+            }
+        };
+
+        $this->mockHandler->append(new Response(403, [], 'Forbidden'));
+
+        try {
+            $resource->callRequest('GET', '/test');
+            $this->fail('ApiException was not thrown');
+        } catch (ApiException $e) {
+            $this->assertEquals(403, $e->getCode());
+            $this->assertStringNotContainsString('GET /test', $e->getMessage());
+            $this->assertEquals('Nexus API Request Failed: 403 Forbidden', $e->getMessage());
+        }
     }
 
     public function testHandlesJsonResponse(): void

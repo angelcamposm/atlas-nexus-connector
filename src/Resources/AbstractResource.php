@@ -6,14 +6,14 @@ namespace Atlas\Connectors\Nexus\Resources;
 
 use Atlas\Connectors\Nexus\Exceptions\ApiException;
 use Atlas\Connectors\Nexus\Exceptions\AuthenticationException;
-use Atlas\Connectors\Nexus\nexusClient;
+use Atlas\Connectors\Nexus\NexusClient;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 
 abstract class AbstractResource
 {
-    public function __construct(protected nexusClient $client)
+    public function __construct(protected NexusClient $client)
     {
     }
 
@@ -60,11 +60,14 @@ abstract class AbstractResource
         /** @var ResponseInterface $response */
         $response = $e->getResponse();
         $statusCode = $response->getStatusCode();
+        $reasonPhrase = $response->getReasonPhrase();
 
         if ($statusCode === 401) {
             throw new AuthenticationException('Unauthorized', $statusCode, $response);
         }
 
-        throw new ApiException($e->getMessage(), $statusCode, $response);
+        $message = sprintf('Nexus API Request Failed: %d %s', $statusCode, $reasonPhrase);
+
+        throw new ApiException($message, $statusCode, $response);
     }
 }
